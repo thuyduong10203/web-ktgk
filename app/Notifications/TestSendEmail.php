@@ -17,6 +17,11 @@ class TestSendEmail extends Notification
     public $cart;
 
     private $data;
+    public function __construct($data)
+    {
+        $this->data = $data;
+    }
+
         public function __construct($data)
         {
         $this->data = $data;
@@ -36,6 +41,9 @@ class TestSendEmail extends Notification
      */
 
     public function toMail($notifiable)
+    {
+        return (new MailMessage)->subject("Đặt hàng thành công")->view("email_template.don_hang_thanh_cong",["data"=>$this->data]);
+    }
 {
 return (new MailMessage)->subject("Đặt hàng thành công")->view("email_template.don_hang_thanh_cong",["data"=>$this->data]);
 }

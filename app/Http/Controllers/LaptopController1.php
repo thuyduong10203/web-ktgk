@@ -11,8 +11,17 @@ class LaptopController1 extends Controller
     public function index(Request $request)
     {
         $sort = $request->query('sort');
+        $keyword = trim((string) $request->query('keyword', ''));
 
         $query = DB::table('san_pham');
+
+        if ($keyword !== '') {
+            $query->where(function ($builder) use ($keyword) {
+                $builder->where('tieu_de', 'like', "%{$keyword}%")
+                    ->orWhere('ten', 'like', "%{$keyword}%")
+                    ->orWhere('series_model', 'like', "%{$keyword}%");
+            });
+        }
 
         if ($sort === 'asc') {
             $query->orderBy('gia', 'asc');
@@ -22,13 +31,16 @@ class LaptopController1 extends Controller
             $query->orderByDesc('id');
         }
 
-        $products = $query
-            ->limit(20)
-            ->get();
+        if ($keyword === '') {
+            $query->limit(20);
+        }
+
+        $products = $query->get();
 
         return view('laptop.index', [
             'products' => $products,
             'sort' => $sort,
+            'keyword' => $keyword,
         ]);
     }
 

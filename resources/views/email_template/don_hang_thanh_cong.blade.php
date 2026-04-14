@@ -35,6 +35,35 @@
             @foreach($data as $key=>$row)
                 <tr>
                     <td align='center'>{{$key+1}}</td>
+                    <td>
+                        @if(is_object($row))
+                            {{$row->tieu_de}}
+                        @else
+                            {{$row['name'] ?? 'N/A'}}
+                        @endif
+                    </td>
+                    <td align='center'>
+                        @if(is_object($row))
+                            {{$row->so_luong}}
+                        @else
+                            {{$row['quantity'] ?? 1}}
+                        @endif
+                    </td>
+                    <td align='center'>
+                        @php
+                            if(is_object($row)) {
+                                $price = $row->gia_ban ?? $row->gia ?? 0;
+                                $qty = $row->so_luong ?? 1;
+                            } else {
+                                $price = $row['price'] ?? 0;
+                                $qty = $row['quantity'] ?? 1;
+                            }
+                            $subtotal = $price * $qty;
+                            $tongTien += $subtotal;
+                        @endphp
+                        {{number_format($price,0,',','.')}}đ
+                    </td>
+                </tr>
                     <td>{{$row->tieu_de}}</td>
                     <td align='center'>{{$row->so_luong}}</td>
                     <td align='center'>{{number_format($row->gia_ban,0,',','.')}}đ</td>

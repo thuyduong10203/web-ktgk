@@ -50,7 +50,7 @@
             @foreach($products as $product)
                 <div class="col-6 col-md-4 col-lg-3 mb-4" style="flex: 0 0 20%; max-width: 20%;">
                     <div class="card h-100 border-0 shadow-sm">
-                        <a href="{{ url('laptop/'.$product->id) }}" class="text-decoration-none text-dark">
+                        <a href="{{ route('laptop.chitiet', ['id' => $product->id]) }}" class="text-decoration-none text-dark">
                             <div class="ratio ratio-4x3 overflow-hidden bg-white">
                                 <img src="{{ asset('storage/image/' . $product->hinh_anh) }}" width="150">
                             </div>

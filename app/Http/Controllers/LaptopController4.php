@@ -4,27 +4,37 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use App\Notifications\TestSendEmail;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class LaptopController4 extends Controller
 {
     public function indexAdmin()
     {
-        $laptops = DB::table('san_pham')->where('status', 1)->get();
-        
+        $query = DB::table('san_pham');
+
+        if (Schema::hasColumn('san_pham', 'status')) {
+            $query->where('status', 1);
+        }
+
+        $laptops = $query->get();
+
         return view('admin.index_admin', compact('laptops'));
     }
 
     public function softDelete($id)
     {
         $laptop = DB::table('san_pham')->where('id', $id)->first();
-        
+
         if ($laptop) {
-            DB::table('san_pham')->where('id', $id)->update(['status' => 0]);
-            
+            if (Schema::hasColumn('san_pham', 'status')) {
+                DB::table('san_pham')->where('id', $id)->update(['status' => 0]);
+            } else {
+                DB::table('san_pham')->where('id', $id)->delete();
+            }
+
             return redirect()->back()->with('success', 'Đã xóa sản phẩm thành công!');
         }
 
@@ -32,12 +42,14 @@ class LaptopController4 extends Controller
     }
 
     function testemail()
+    {
         {
         $user = User::find(2);
         $donHang = DB::select("select * from chi_tiet_don_hang c, san_pham s
         where c.laptop_id = s.id
         and c.ma_don_hang = 10");
         $user->notify(new TestSendEmail($donHang));
+    }
         }
 
     public function datHang(Request $request)

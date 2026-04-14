@@ -33,8 +33,7 @@
                     <td>
 <img src="{{ asset('storage/image/' . $laptop->hinh_anh) }}" width="50">                    </td>
                     <td>
-                        <a href="#" class="btn btn-primary btn-sm" title="Chức năng đang phát triển">Xem</a>
-                        
+<a href="{{ route('laptop.chitiet', $laptop->id) }}" class="btn btn-primary btn-sm">Xem</a>                        
                         <form action="{{ route('admin.laptop.softDelete', $laptop->id) }}" method="POST" style="display:inline-block;">
                             @csrf
                             @method('PATCH')

@@ -168,11 +168,6 @@
                                 @else
                                     0
                                 @endif
-                            @if (session('cart'))
-                                {{ count(session('cart')) }}
-                            @else
-                                0
-                            @endif
                         </div>
                         <a href="{{url('/gio-hang')}}" style='cursor:pointer;color:white;'>
                             <i class="fa fa-cart-arrow-down fa-2x mr-2 mt-1" aria-hidden="true"></i>
@@ -186,17 +181,10 @@
                                     {{ Auth::user()->name }}
                                 </button>
                                 <div class="dropdown-menu">
-                                <a class="dropdown-item" href="">Quản lý</a>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <a class="dropdown-item" onclick="event.preventDefault();
-                                                        this.closest('form').submit();">Đăng xuất</a>
-                                </form>
-                                    <a class="dropdown-item" href="">Quản lý</a>
+                                    <a class="dropdown-item" href="{{ route('admin.index') }}">Quản lý</a>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <a class="dropdown-item" onclick="event.preventDefault();
-                                                            this.closest('form').submit();">Đăng xuất</a>
+                                        <button type="submit" class="dropdown-item">Đăng xuất</button>
                                     </form>
                                 </div>
                             </div>

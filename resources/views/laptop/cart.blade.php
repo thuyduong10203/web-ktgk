@@ -1,96 +1,100 @@
-<x-laptop-layout title="Giỏ hàng">
-    <div class="container mt-4">
-        <div class="cart-header text-center mb-3">
-            <h4 class="text-primary">DANH SÁCH SẢN PHẨM</h4>
-        </div>
+<x-laptop-layout>
+    <x-slot name='title'>
+        Đặt hàng
+    </x-slot>
 
-        @php $total = 0; @endphp
-        <table class="table table-bordered text-center align-middle cart-table">
-            <thead class="thead-light">
+    <div>
+        <div style='color:#15c; font-weight:bold;font-size:15px;text-align:center'>DANH SÁCH SẢN PHẨM</div>
+
+        <table class='book-table' style='margin:0 auto; width:70%' border='1' cellspacing='0' cellpadding='5'>
+            <thead>
                 <tr>
                     <th>STT</th>
-                    <th class="text-left">Tên sản phẩm</th>
+                    <th>Tên laptop</th>
                     <th>Số lượng</th>
                     <th>Đơn giá</th>
                     <th>Xóa</th>
                 </tr>
             </thead>
             <tbody>
-                @if(session('cart'))
-                    @foreach(session('cart') as $id => $details)
-                        @php $total += $details['price'] * $details['quantity']; @endphp
+                @php
+                    $tongTien = 0;
+                @endphp
+                @if(isset($data) && count($data) > 0)
+                    @foreach($data as $key => $row)
+                        @php
+                            $soLuong = 0;
+                            if(isset($quantity[$row->id])) {
+                                if(is_array($quantity[$row->id])) {
+                                    $soLuong = (int)($quantity[$row->id][0] ?? 0);
+                                } else {
+                                    $soLuong = (int)$quantity[$row->id];
+                                }
+                            }
+                        @endphp
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td class="text-left">{{ $details['name'] }}</td>
-                            <td>{{ $details['quantity'] }}</td>
-                            <td>{{ number_format($details['price'], 0, ',', '.') }}đ</td>
-                            <td>
-                                <a href="{{ route('cart.remove', $id) }}" class="btn btn-danger btn-sm"
-                                   onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+                            <td align='center'>{{ $key + 1 }}</td>
+                            <td>{{ $row->tieu_de }}</td>
+                            <td align='center'>{{ $soLuong }}</td>
+                            <td align='center'>{{ number_format($row->gia, 0, ',', '.') }}đ</td>
+                            <td align='center'>
+                                <form method='post' action="{{ route('cartdelete') }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <input type='hidden' value='{{ $row->id }}' name='id'>
+                                    <input type='submit' class='btn btn-sm btn-danger' value='Xóa'>
+                                </form>
                             </td>
                         </tr>
+                        @php
+                            $tongTien += $soLuong * $row->gia;
+                        @endphp
                     @endforeach
-                    <tr class="table font-weight-bold">
-                        <td colspan="3" class="text-center">Tổng cộng</td>
-                        <td>{{ number_format($total, 0, ',', '.') }}đ</td>
+                    <tr>
+                        <td colspan='3' align='center'><b>Tổng cộng</b></td>
+                        <td><b>{{ number_format($tongTien, 0, ',', '.') }}đ</b></td>
+                        <td></td>
                     </tr>
                 @else
                     <tr>
-                        <td colspan="5">Giỏ hàng trống</td>
+                        <td colspan='5' align='center'>Chưa có sản phẩm trong giỏ hàng</td>
                     </tr>
                 @endif
             </tbody>
         </table>
 
-        @if(session('cart'))
-            <div class="checkout-box text-center mt-4">
-                <form action="{{ route('cart.checkout') }}" method="POST" class="d-inline-block text-left w-100">
-                    @csrf
-                    <div class="form-group row justify-content-center mb-3">
-                        <label for="payment_method" class="col-form-label col-sm-4 text-sm-right">Hình thức thanh toán</label>
-                        <div class="col-sm-4">
-                            <select id="payment_method" name="payment_method" class="form-control">
-                                <option value="1">Tiền mặt</option>
-                                <option value="2">Chuyển khoản</option>
+        <div style='font-weight:bold;width:70%;margin:0 auto;text-align:center;'>
+            @if(session('success'))
+                <div class='alert alert-success mt-2'>
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class='alert alert-danger mt-2'>
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @auth
+                @if(isset($data) && count($data) > 0)
+                    <form method='post' action="{{ route('ordercreate') }}">
+                        @csrf
+                        Hình thức thanh toán <br>
+                        <div class='d-inline-flex'>
+                            <select name='hinh_thuc_thanh_toan' class='form-control form-control-sm'>
+                                <option value='1'>Tiền mặt</option>
+                                <option value='2'>Chuyển khoản</option>
                             </select>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-lg px-4">ĐẶT HÀNG</button>
-                    </div>
-                </form>
-            </div>
-        @endif
+                        </div><br>
+                        <input type='submit' class='btn btn-sm btn-primary mt-1' value='ĐẶT HÀNG'>
+                    </form>
+                @else
+                    Vui lòng chọn sản phẩm cần mua
+                @endif
+            @else
+                Vui lòng <a href="{{ route('login') }}">đăng nhập</a> trước khi đặt hàng
+            @endauth
+        </div>
     </div>
-
-    <style>
-        .cart-table th,
-        .cart-table td {
-            vertical-align: middle;
-        }
-
-        .cart-table th.text-left,
-        .cart-table td.text-left {
-            text-align: left;
-        }
-
-        .checkout-box .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .checkout-box select.form-control {
-            min-width: 220px;
-        }
-
-        @media (max-width: 576px) {
-            .checkout-box .row {
-                flex-direction: column;
-            }
-            .checkout-box label,
-            .checkout-box .col-sm-4 {
-                width: 100%;
-                text-align: left;
-            }
-        }
-    </style>
 </x-laptop-layout>

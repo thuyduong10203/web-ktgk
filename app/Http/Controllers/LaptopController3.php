@@ -2,103 +2,138 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\TestSendEmail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class LaptopController3 extends Controller
 {
-    public function detail($id)
+    public function chitiet($id)
     {
-        $laptop = DB::table('san_pham')->where('id', $id)->first();
-        if (!$laptop) {
+        $data = DB::table('san_pham')->where('id', $id)->first();
+
+        if (!$data) {
             return redirect('/')->with('error', 'Không tìm thấy sản phẩm!');
         }
-        return view('laptop.detail', compact('laptop'), ['title' => $laptop->tieu_de]);
+
+        return view('laptop.detail', compact('data'));
     }
 
-    public function addToCart(Request $request)
+    public function cartadd(Request $request)
     {
-        $id = $request->id;
-        $quantity = $request->quantity ?? 1;
+        $request->validate([
+            'id' => ['required', 'numeric'],
+            'num' => ['required', 'numeric', 'min:1'],
+        ]);
 
-        $laptop = DB::table('san_pham')->where('id', $id)->first();
-
+        $id = (int) $request->id;
+        $num = (int) $request->num;
         $cart = session()->get('cart', []);
 
         if (isset($cart[$id])) {
-            $cart[$id]['quantity'] += $quantity;
+            $cart[$id] += $num;
         } else {
-            $cart[$id] = [
-                "name" => $laptop->tieu_de,
-                "quantity" => $quantity,
-                "price" => $laptop->gia,
-                "image" => $laptop->hinh_anh
-            ];
+            $cart[$id] = $num;
         }
 
         session()->put('cart', $cart);
-        return redirect()->back()->with('success', 'Đã thêm sản phẩm vào giỏ hàng!');
+
+        return response()->json(count($cart));
     }
 
-    public function viewCart()
+    public function order()
     {
+        $cart = session()->get('cart', []);
+        $data = collect();
+        $quantity = [];
 
-        return view('laptop.cart', ['title' => 'Giỏ hàng']);
+        if (!empty($cart)) {
+            $ids = array_keys($cart);
+            foreach ($cart as $id => $value) {
+                $quantity[$id] = (int) $value;
+            }
+            $data = DB::table('san_pham')->whereIn('id', $ids)->get();
+        }
+
+        return view('laptop.cart', compact('quantity', 'data'));
     }
 
-    public function removeCart($id)
+    public function cartdelete(Request $request)
     {
-        $cart = session()->get('cart');
+        $request->validate([
+            'id' => ['required', 'numeric'],
+        ]);
+
+        $id = (int) $request->id;
+        $cart = session()->get('cart', []);
+
         if (isset($cart[$id])) {
             unset($cart[$id]);
             session()->put('cart', $cart);
         }
-        return redirect()->back()->with('success', 'Đã xóa sản phẩm!');
+
+        return redirect()->route('cart');
     }
 
-    // CÂU 4: Xử lý đặt hàng
-    public function checkout(Request $request)
+    public function ordercreate(Request $request)
     {
-        $cart = session()->get('cart', []);
+        $request->validate([
+            'hinh_thuc_thanh_toan' => ['required', 'numeric'],
+        ]);
 
-        if (empty($cart)) {
-            return redirect('/')->with('error', 'Giỏ hàng trống!');
+        if (!Auth::check()) {
+            return redirect()->route('login');
         }
-        $userId = auth()->id() ?? null;
 
-        DB::beginTransaction();
+        $cart = session()->get('cart', []);
+        if (empty($cart)) {
+            return redirect()->route('cart')->with('error', 'Giỏ hàng trống.');
+        }
 
-        try {
-            $maDonHang = DB::table('don_hang')->insertGetId([
+        $mailData = [];
+
+        DB::transaction(function () use ($request, $cart, &$mailData) {
+            $id_don_hang = DB::table('don_hang')->insertGetId([
                 'ngay_dat_hang' => now(),
-                'tinh_trang' => 1,  
-                'hinh_thuc_thanh_toan' => 1,  
-                'user_id' => $userId,
-                'created_at' => now(),
-                'updated_at' => now()
+                'tinh_trang' => 1,
+                'hinh_thuc_thanh_toan' => $request->hinh_thuc_thanh_toan,
+                'user_id' => Auth::id(),
             ]);
 
-            // Thêm chi tiết đơn hàng
-            foreach ($cart as $id => $item) {
-                DB::table('chi_tiet_don_hang')->insert([
-                    'ma_don_hang' => $maDonHang,
-                    'laptop_id' => $id,
-                    'so_luong' => $item['quantity'],
-                    'don_gia' => $item['price'],
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+            $ids = array_keys($cart);
+            $products = DB::table('san_pham')->whereIn('id', $ids)->get();
+
+            $detail = [];
+            foreach ($products as $row) {
+                $soLuong = (int) ($cart[$row->id] ?? 1);
+
+                $detail[] = [
+                    'ma_don_hang' => $id_don_hang,
+                    'laptop_id' => $row->id,
+                    'so_luong' => $soLuong,
+                    'don_gia' => $row->gia,
+                ];
+
+                $mailData[] = (object) [
+                    'tieu_de' => $row->tieu_de,
+                    'so_luong' => $soLuong,
+                    'gia_ban' => $row->gia,
+                ];
             }
 
-            // Xóa giỏ hàng
+            if (!empty($detail)) {
+                DB::table('chi_tiet_don_hang')->insert($detail);
+            }
+
             session()->forget('cart');
+        });
 
-            DB::commit();
-            return redirect('/')->with('success', 'Đặt hàng thành công! Mã đơn: #' . $maDonHang);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect('/')->with('error', 'Đặt hàng thất bại: ' . $e->getMessage());
+        $user = Auth::user();
+        if ($user) {
+            $user->notify(new TestSendEmail($mailData));
         }
+
+        return redirect()->route('cart')->with('success', 'Đặt hàng thành công!');
     }
 }
