@@ -20,3 +20,7 @@ Route::get('/admin', [LaptopController4::class, 'indexAdmin'])->name('admin.inde
 
 // Route xử lý xóa mềm
 Route::patch('/admin/laptop/delete/{id}', [LaptopController4::class, 'softDelete'])->name('admin.laptop.softDelete');
+
+Route::middleware('auth')->post('/dat-hang', [LaptopController4::class, 'datHang'])->name('datHang');
+
+Route::get('/testemail','App\Http\Controllers\ViduController@testemail');

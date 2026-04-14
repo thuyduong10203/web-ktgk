@@ -50,10 +50,10 @@
     <script>
 $(document).ready(function() {
     $('#laptopTable').DataTable({
-        "pageLength": 10, // Hiển thị 10 sản phẩm mỗi trang [cite: 22]
+        "pageLength": 10, 
         "language": {
-            "sLengthMenu": "Hiển thị _MENU_ dữ liệu",
-            "sSearch": "Tìm kiếm:",
+            "sLengthMenu": "_MENU_ entries per page",
+            "sSearch": "Search:",
             "sEmptyTable": "Không có dữ liệu trong bảng",
             "sInfo": "Đang hiển thị từ _START_ đến _END_ của _TOTAL_ dữ liệu",
             "sInfoEmpty": "Đang hiển thị 0 đến 0 của 0 dữ liệu",

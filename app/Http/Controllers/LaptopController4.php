@@ -4,19 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\TestSendEmail;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class LaptopController4 extends Controller
 {
-    // Hiển thị trang quản lý sản phẩm
     public function indexAdmin()
     {
-        // Lấy các sản phẩm có status là 1 
         $laptops = DB::table('san_pham')->where('status', 1)->get();
         
         return view('admin.index_admin', compact('laptops'));
     }
 
-    // Xử lý xóa mềm 
     public function softDelete($id)
     {
         $laptop = DB::table('san_pham')->where('id', $id)->first();
@@ -30,4 +31,23 @@ class LaptopController4 extends Controller
         return redirect()->back()->with('error', 'Không tìm thấy sản phẩm.');
     }
 
+    public function testemail()
+    {
+        $user = User::find(2);
+        Notification::send($user, new TestSendEmail());
+    }
+
+    public function datHang(Request $request)
+    {
+        $user = Auth::user();
+        $cart = session()->get('cart');
+
+        if ($user && $cart) {
+            $user->notify(new TestSendEmail($cart));
+            session()->forget('cart');
+            return redirect()->back()->with('success', 'Đặt hàng thành công! Email đã được gửi.');
+        }
+
+        return redirect()->back()->with('error', 'Đặt hàng thất bại.');
+    }
 }
