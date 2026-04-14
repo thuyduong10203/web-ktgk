@@ -43,12 +43,14 @@ class LaptopController4 extends Controller
 
     function testemail()
     {
+        {
         $user = User::find(2);
         $donHang = DB::select("select * from chi_tiet_don_hang c, san_pham s
         where c.laptop_id = s.id
         and c.ma_don_hang = 10");
         $user->notify(new TestSendEmail($donHang));
     }
+        }
 
     public function datHang(Request $request)
     {

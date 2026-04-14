@@ -22,6 +22,10 @@ class TestSendEmail extends Notification
         $this->data = $data;
     }
 
+        public function __construct($data)
+        {
+        $this->data = $data;
+        }
     /**
      * Get the notification's delivery channels.
      *
@@ -40,6 +44,9 @@ class TestSendEmail extends Notification
     {
         return (new MailMessage)->subject("Đặt hàng thành công")->view("email_template.don_hang_thanh_cong",["data"=>$this->data]);
     }
+{
+return (new MailMessage)->subject("Đặt hàng thành công")->view("email_template.don_hang_thanh_cong",["data"=>$this->data]);
+}
 
     /**
      * Get the array representation of the notification.

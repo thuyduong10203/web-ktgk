@@ -64,6 +64,13 @@
                         {{number_format($price,0,',','.')}}đ
                     </td>
                 </tr>
+                    <td>{{$row->tieu_de}}</td>
+                    <td align='center'>{{$row->so_luong}}</td>
+                    <td align='center'>{{number_format($row->gia_ban,0,',','.')}}đ</td>
+                </tr>
+                @php
+                    $tongTien +=$row->so_luong*$row->gia_ban;
+                @endphp
             @endforeach
             <tr>
                 <td colspan='3' align='center'><b>Tổng cộng</b></td>
