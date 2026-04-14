@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LaptopController4;
 use App\Http\Controllers\LaptopController2;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +25,15 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 
+// Route hiển thị trang quản lý
+Route::get('/admin', [LaptopController4::class, 'indexAdmin'])->name('admin.index');
+
+// Route xử lý xóa mềm
+Route::patch('/admin/laptop/delete/{id}', [LaptopController4::class, 'softDelete'])->name('admin.laptop.softDelete');
+
+Route::middleware('auth')->post('/dat-hang', [LaptopController4::class, 'datHang'])->name('datHang');
+
+Route::get('/testemail','App\Http\Controllers\ViduController@testemail');
 
 // Câu 3
 Route::get('/laptop/chitiet/{id}', [LaptopController3::class, 'detail'])->name('laptop.detail');
