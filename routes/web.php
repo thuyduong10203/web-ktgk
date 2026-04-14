@@ -8,12 +8,12 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LaptopController3;
 
-Route::get('/', [LaptopController1::class, 'index']);
+Route::get('/laptop', [LaptopController1::class, 'index']);
 Route::get('/laptop/theloai/{id}', [LaptopController1::class, 'theloai'])->name('laptop.theloai');
 Route::get('/storage-image/{filename}', [LaptopController1::class, 'image'])
     ->where('filename', '.*')
     ->name('storage.image');
-Route::get('/', [LaptopController2::class, 'index']);
+Route::get('/laptop', [LaptopController2::class, 'index']);
 Route::get('/', function () {
     return view('welcome');
 });

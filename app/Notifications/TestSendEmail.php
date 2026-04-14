@@ -16,11 +16,11 @@ class TestSendEmail extends Notification
      */
     public $cart;
 
-    public function __construct($cart = null)
-    {
-        $this->cart = $cart;
-    }
-
+    private $data;
+        public function __construct($data)
+        {
+        $this->data = $data;
+        }
     /**
      * Get the notification's delivery channels.
      *
@@ -35,15 +35,10 @@ class TestSendEmail extends Notification
      * Get the mail representation of the notification.
      */
 
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject('Xác nhận đơn hàng thành công')
-            ->view('email_template.don_hang_thanh_cong', [
-                'user' => $notifiable,
-                'cart' => $this->cart
-            ]);
-    }
+    public function toMail($notifiable)
+{
+return (new MailMessage)->subject("Đặt hàng thành công")->view("email_template.don_hang_thanh_cong",["data"=>$this->data]);
+}
 
     /**
      * Get the array representation of the notification.
