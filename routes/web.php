@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\LaptopController2;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LaptopController3;
 
+Route::get('/', [LaptopController2::class, 'index']);
 Route::get('/', function () {
     return view('welcome');
 });
